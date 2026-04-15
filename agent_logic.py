@@ -1,0 +1,98 @@
+from typing import TypedDict
+from langgraph.graph import StateGraph, END
+import os
+from langchain_openai import ChatOpenAI
+from executor import run_python_code
+
+# 1. 定义状态结构
+class AgentState(TypedDict):
+    code: str
+    error: str
+    iterations: int
+    is_fixed: bool
+
+# 2. 定义修复节点
+def repair_node(state: AgentState):
+    # 每次进入节点前确保能获取最新的 API KEY
+    api_key = os.getenv("DEEPSEEK_API_KEY")
+    llm = ChatOpenAI(
+        model='deepseek-chat', 
+        openai_api_key=api_key, 
+        openai_api_base='https://api.deepseek.com',
+        temperature=0.2 # 降低随机性，让修复更严谨
+    )
+    
+    current_iter = state.get("iterations", 0)
+    print(f"\n🚀 [Agent 思考中] 正在进行第 {current_iter + 1} 次修复尝试...")
+    
+    prompt = f"""
+    你是一个高级 Python 开发专家。请修复以下代码中的错误。
+    任务要求：
+    1. 修复语法错误、逻辑错误（如索引越界）和缺失的 import。
+    2. 只返回修复后的代码内容。
+    3. 严禁包含 ```python 等 Markdown 标签，严禁包含任何解释文字。
+
+    【待修复代码】：
+    {state['code']}
+    
+    【报错信息】：
+    {state['error']}
+    """
+    
+    response = llm.invoke(prompt)
+    # 彻底清洗掉可能干扰运行的 Markdown 格式
+    clean_code = response.content.replace("```python", "").replace("```", "").strip()
+    
+    # 返回更新后的状态：次数+1
+    return {
+        "code": clean_code, 
+        "iterations": current_iter + 1,
+        "is_fixed": False # 默认未修复，交给 verify 节点去判断
+    }
+
+# 3. 定义验证节点
+def verify_node(state: AgentState):
+    print("🔍 [Agent 验证中] 正在运行测试...")
+    # 调用你的 executor.py
+    success, result = run_python_code(state["code"])
+    
+    if success:
+        print("✅ 验证通过！代码运行正常。")
+        return {**state, "error": "", "is_fixed": True}
+    else:
+        print(f"❌ 验证失败，报错：{result}")
+        return {**state, "error": result, "is_fixed": False}
+
+# 4. 定义条件判断（控制循环开关）
+def should_continue(state: AgentState):
+    # 核心：增加强制停止机制
+    if state["is_fixed"]:
+        return "end"
+    if state["iterations"] >= 3:
+        print("⚠️ 已达到最大尝试次数（3次），停止修复。")
+        return "end"
+    return "continue"
+
+# 5. 构建工作流图
+workflow = StateGraph(AgentState)
+
+workflow.add_node("repair_code", repair_node)
+workflow.add_node("verify_code", verify_node)
+
+workflow.set_entry_point("repair_code")
+
+# 连线
+workflow.add_edge("repair_code", "verify_code")
+
+# 使用条件边
+workflow.add_conditional_edges(
+    "verify_code",
+    should_continue,
+    {
+        "continue": "repair_code",
+        "end": END
+    }
+)
+
+# 6. 编译
+app = workflow.compile()
