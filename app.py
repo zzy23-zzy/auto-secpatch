@@ -1,6 +1,33 @@
 import streamlit as st
 from dotenv import load_dotenv
 from agent_logic import app as agent_app
+st.markdown("""
+<style>
+
+/* 🚀 干掉顶部白色条 */
+header {display: none;}
+
+/* 页面整体背景 */
+.stApp {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+}
+
+/* 上边距优化 */
+.block-container {
+    padding-top: 1rem;
+}
+
+/* 卡片 */
+.card {
+    background: rgba(30, 41, 59, 0.7);
+    padding: 20px;
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 # 加载环境变量
 load_dotenv()
