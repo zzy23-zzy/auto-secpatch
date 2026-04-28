@@ -12,22 +12,21 @@ class AgentState(TypedDict):
     is_fixed: bool
 
 # 2. 定义修复节点
-# 找到 repair_node 函数
+# 找到 repair_node 函数里的 llm 定义
 def repair_node(state: AgentState):
-    # 1. 确保获取 API KEY
-    api_key = os.getenv("OPENAI_API_KEY") # 建议统一用这个变量名
+    api_key = os.getenv("OPENAI_API_KEY")
     
-    # 2. 这里的修改最关键：显式关闭异步建议，强制同步
+    # 强制使用同步客户端，并关闭所有可能引起异步冲突的特性
     llm = ChatOpenAI(
         model='deepseek-chat', 
         openai_api_key=api_key, 
         openai_api_base='https://api.deepseek.com',
         temperature=0.2,
-        max_retries=2,
-        # 强制不使用异步客户端
-        default_headers={"x-async": "false"} 
+        # 核心：显式指定这些参数来规避 3.13 的异步检查
+        streaming=False,
+        default_headers={"x-async": "false"}
     )
-    
+
     current_iter = state.get("iterations", 0)
     prompt = f"..." # 这里保持你原来的 prompt 不变
     
