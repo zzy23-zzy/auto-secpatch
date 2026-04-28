@@ -54,7 +54,7 @@ def repair_node(state: AgentState):
     2. 使用【参数化查询（Parameterized Queries）】重写数据库操作部分。
     3. 修复任何可能导致运行失败的逻辑错误。
     4. 只返回修复后的完整代码，严禁包含解释文字和 Markdown 标签（如 ```python）。
-
+请只输出修复后的 Python 代码，不要包含任何解释、不要包含 Markdown 的 ```python 标记
     【待修复的危险代码】：
     {state['code']}
     
