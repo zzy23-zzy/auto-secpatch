@@ -1,3 +1,4 @@
+import asyncio
 import streamlit as st
 import os
 from dotenv import load_dotenv
@@ -69,7 +70,10 @@ with col2:
 
             with st.spinner("Agent 正在思考并验证中..."):
                 # 调用 LangGraph 编译后的 app
-                final_result = app.invoke(initial_input)
+                //# 修改后的代码：强制在异步环境里运行这个任务
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+final_result = app.invoke(initial_input)
                 
             # 显示修复状态
             if final_result["is_fixed"]:
