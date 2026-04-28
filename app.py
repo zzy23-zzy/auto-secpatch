@@ -1,11 +1,6 @@
 import streamlit as st
 from dotenv import load_dotenv
 from agent_logic import app as agent_app
-st.markdown("""
-<style>
-header {display: none;}
-</style>
-""", unsafe_allow_html=True)
 
 # 加载环境变量
 load_dotenv()
@@ -24,6 +19,26 @@ st.markdown("""
 .stApp {
     background: linear-gradient(135deg, #0f172a, #1e293b);
     color: #e2e8f0;
+}
+/* 1. 隐藏顶部白色装饰线和 Header */
+header {
+    visibility: hidden;
+    height: 0px;
+}
+
+/* 2. 移除主容器顶部的巨大间距 */
+.stAppViewMain > section > div {
+    padding-top: 0rem !important;
+}
+
+/* 3. 针对 Streamlit 新版本的顶部锚点空白修复 */
+[data-testid="stHeader"] {
+    background-color: rgba(0,0,0,0);
+}
+
+/* 4. 强制让主背景覆盖整个视口 */
+.stApp {
+    margin-top: -50px; /* 向上微调偏移量 */
 }
 
 /* 主容器 */
