@@ -12,14 +12,97 @@ st.set_page_config(
     layout="wide"
 )
 
-# ===== 顶部标题 =====
+# ===== 🌟 全局UI美化（核心）=====
 st.markdown("""
-# 🛡️ Auto-SecPatch
-### 智能代码漏洞自愈 Agent
-""")
-st.markdown("---")
+<style>
+/* 整体背景 */
+.stApp {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: #e2e8f0;
+}
 
-# ===== 默认漏洞代码 =====
+/* 主容器 */
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* 卡片效果 */
+.card {
+    background: rgba(30, 41, 59, 0.7);
+    padding: 20px;
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+/* 标题 */
+.title {
+    font-size: 32px;
+    font-weight: 700;
+}
+
+/* 副标题 */
+.subtitle {
+    color: #94a3b8;
+    margin-bottom: 10px;
+}
+
+/* 按钮 */
+.stButton>button {
+    border-radius: 12px;
+    height: 48px;
+    font-size: 16px;
+    font-weight: 600;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    color: white;
+    border: none;
+}
+
+.stButton>button:hover {
+    background: linear-gradient(90deg, #4f46e5, #7c3aed);
+}
+
+/* 输入框 */
+textarea {
+    border-radius: 12px !important;
+    background-color: #020617 !important;
+    color: #e2e8f0 !important;
+    border: 1px solid #334155 !important;
+}
+
+/* code块 */
+pre {
+    border-radius: 12px !important;
+}
+
+/* 成功提示 */
+.stSuccess {
+    border-radius: 12px;
+}
+
+/* warning */
+.stWarning {
+    border-radius: 12px;
+}
+
+/* error */
+.stError {
+    border-radius: 12px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ===== 标题 =====
+st.markdown("""
+<div class="title">🛡️ Auto-SecPatch</div>
+<div class="subtitle">智能代码漏洞自愈 Agent</div>
+""", unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# ===== 默认代码 =====
 default_code = """import sqlite3
 def get_user(username):
     conn = sqlite3.connect('test.db')
@@ -28,24 +111,30 @@ def get_user(username):
     cursor.execute(query)
     return cursor.fetchone()"""
 
-# ===== 左右分栏布局 =====
+# ===== 左右布局 =====
 col1, col2 = st.columns([1, 1], gap="large")
 
-# ===== 左侧：代码输入 =====
+# ===== 左侧 =====
 with col1:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+
     st.markdown("### 📄 输入代码")
-    
+
     code_content = st.text_area(
         " ",
         value=default_code,
-        height=500,
+        height=520,
         label_visibility="collapsed"
     )
 
     run_button = st.button("🚀 开始修复", use_container_width=True)
 
-# ===== 右侧：修复结果 =====
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ===== 右侧 =====
 with col2:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+
     st.markdown("### 🤖 修复结果")
 
     if run_button:
@@ -74,3 +163,5 @@ with col2:
 
                 except Exception as e:
                     st.error(f"❌ 出错: {str(e)}")
+
+    st.markdown('</div>', unsafe_allow_html=True)
