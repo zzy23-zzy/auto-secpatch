@@ -1,6 +1,5 @@
 import streamlit as st
 import os
-import asyncio
 from dotenv import load_dotenv
 from agent_logic import app as agent_app
 
@@ -27,22 +26,15 @@ if st.button("🚀 开始自动审计与修复", use_container_width=True):
     else:
         initial_input = {
             "code": code_content,
-            "error": "Security Audit",
+            "error": "",
             "iterations": 0,
-            "is_fixed": False
+            "is_fixed": False,
+            "max_iters": 3
         }
 
         with st.spinner("Agent 正在修复中..."):
             try:
-                # 【核心修复点】手动创建并设置事件循环，彻底解决 RuntimeError
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                
-                # 在这个循环里运行你的 Agent
                 final_result = agent_app.invoke(initial_input)
-                
-                # 运行完关闭循环
-                loop.close()
 
                 if final_result.get("is_fixed"):
                     st.success(f"✅ 修复成功！尝试次数: {final_result.get('iterations')}")
@@ -51,5 +43,6 @@ if st.button("🚀 开始自动审计与修复", use_container_width=True):
                 
                 st.subheader("✨ 修复后的代码")
                 st.code(final_result.get("code"), language="python")
+
             except Exception as e:
                 st.error(f"❌ 运行出错: {str(e)}")
