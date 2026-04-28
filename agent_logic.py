@@ -18,15 +18,12 @@ def repair_node(state: AgentState):
     
     # 强制使用同步客户端，并关闭所有可能引起异步冲突的特性
     llm = ChatOpenAI(
-        model='deepseek-chat', 
-        openai_api_key=api_key, 
-        openai_api_base='https://api.deepseek.com',
-        temperature=0.2,
-        # 核心：显式指定这些参数来规避 3.13 的异步检查
-        streaming=False,
-        default_headers={"x-async": "false"}
-    )
-
+    model='deepseek-chat', 
+    openai_api_key=api_key, 
+    openai_api_base='https://api.deepseek.com',
+    temperature=0.1, # 降低随机性
+    max_tokens=2000
+)
     current_iter = state.get("iterations", 0)
     prompt = f"..." # 这里保持你原来的 prompt 不变
     
