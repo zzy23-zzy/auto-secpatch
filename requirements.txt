@@ -1,13 +1,6 @@
-# 核心 AI 框架 - 固定到最稳版本，解决异步报错
+streamlit
 langchain-openai==0.1.1
 langgraph==0.0.30
 langchain-core==0.1.33
-
-# 基础 Web 框架
-streamlit
-flask
 python-dotenv
-
-# 异步兼容补丁
 httpx==0.27.0
-asyncio
