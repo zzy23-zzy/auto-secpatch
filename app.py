@@ -1,14 +1,13 @@
 import streamlit as st
 import os
 import asyncio
-import threading
 from dotenv import load_dotenv
-from agent_logic import app as agent_app
+from agent_logic import app as agent_app  # 确保这里用 as agent_app 防止命名冲突
 
 # 1. 加载环境变量
 load_dotenv()
 
-# 2. 页面基础配置 (必须放在第一行)
+# 2. 页面基础配置 (必须是 Streamlit 的第一条指令)
 st.set_page_config(
     page_title="Auto-SecPatch Agent", 
     page_icon="🛡️",
@@ -64,30 +63,31 @@ with col2:
 
             with st.spinner("Agent 正在思考并验证中..."):
                 try:
-                    # 【核心修复】解决 Railway/Python 3.13 的同步客户端报错
-                    # 我们在 st.spinner 内部使用独立的 loop 运行 invoke
+                    # 【核心修复点】
+                    # 在 Python 3.13 + Railway 环境下，必须为同步调用创建独立的事件循环
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
                     try:
+                        # 使用刚才导入的 agent_app
                         final_result = agent_app.invoke(initial_input)
                     finally:
                         loop.close()
                     
-                    # 显示结果
-                    if final_result["is_fixed"]:
-                        st.success(f"✅ 修复成功！尝试次数: {final_result['iterations']}")
+                    # 6. 显示结果
+                    if final_result.get("is_fixed"):
+                        st.success(f"✅ 修复成功！尝试次数: {final_result.get('iterations')}")
                     else:
-                        st.warning("⚠️ Agent 尝试了修复但未通过验证，请检查逻辑。")
+                        st.warning("⚠️ Agent 尝试了修复但未通过验证。")
 
                     st.subheader("✨ 修复后的代码")
-                    st.code(final_result["code"], language="python")
+                    st.code(final_result.get("code"), language="python")
                     
                     st.download_button(
                         label="📥 下载修复后的代码",
-                        data=final_result["code"],
+                        data=final_result.get("code"),
                         file_name="fixed_code.py",
                         mime="text/x-python"
                     )
                 except Exception as e:
                     st.error(f"❌ 运行出错: {str(e)}")
-                    st.info("提示：请检查 Railway 变量中的 OPENAI_API_KEY 是否配置正确。")
+                    st.info("提示：请检查 Railway 变量中是否配置了 OPENAI_API_KEY。")
