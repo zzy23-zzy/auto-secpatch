@@ -1,15 +1,25 @@
 import streamlit as st
-import os
 from dotenv import load_dotenv
 from agent_logic import app as agent_app
 
 # 加载环境变量
 load_dotenv()
 
-st.set_page_config(page_title="Auto-SecPatch Agent", layout="wide")
-st.title("🛡️ Auto-SecPatch: 智能代码漏洞自愈 Agent")
+# 页面配置
+st.set_page_config(
+    page_title="Auto-SecPatch Agent",
+    page_icon="🛡️",
+    layout="wide"
+)
 
-# 默认代码
+# ===== 顶部标题 =====
+st.markdown("""
+# 🛡️ Auto-SecPatch
+### 智能代码漏洞自愈 Agent
+""")
+st.markdown("---")
+
+# ===== 默认漏洞代码 =====
 default_code = """import sqlite3
 def get_user(username):
     conn = sqlite3.connect('test.db')
@@ -18,31 +28,49 @@ def get_user(username):
     cursor.execute(query)
     return cursor.fetchone()"""
 
-code_content = st.text_area("输入 Python 代码：", value=default_code, height=400)
+# ===== 左右分栏布局 =====
+col1, col2 = st.columns([1, 1], gap="large")
 
-if st.button("🚀 开始自动审计与修复", use_container_width=True):
-    if not code_content.strip():
-        st.error("请输入代码")
-    else:
-        initial_input = {
-            "code": code_content,
-            "error": "",
-            "iterations": 0,
-            "is_fixed": False,
-            "max_iters": 3
-        }
+# ===== 左侧：代码输入 =====
+with col1:
+    st.markdown("### 📄 输入代码")
+    
+    code_content = st.text_area(
+        " ",
+        value=default_code,
+        height=500,
+        label_visibility="collapsed"
+    )
 
-        with st.spinner("Agent 正在修复中..."):
-            try:
-                final_result = agent_app.invoke(initial_input)
+    run_button = st.button("🚀 开始修复", use_container_width=True)
 
-                if final_result.get("is_fixed"):
-                    st.success(f"✅ 修复成功！尝试次数: {final_result.get('iterations')}")
-                else:
-                    st.warning("⚠️ 未能完全修复，请检查逻辑。")
-                
-                st.subheader("✨ 修复后的代码")
-                st.code(final_result.get("code"), language="python")
+# ===== 右侧：修复结果 =====
+with col2:
+    st.markdown("### 🤖 修复结果")
 
-            except Exception as e:
-                st.error(f"❌ 运行出错: {str(e)}")
+    if run_button:
+        if not code_content.strip():
+            st.error("请输入代码")
+        else:
+            initial_input = {
+                "code": code_content,
+                "error": "",
+                "iterations": 0,
+                "is_fixed": False,
+                "max_iters": 3
+            }
+
+            with st.spinner("Agent 正在思考中..."):
+                try:
+                    result = agent_app.invoke(initial_input)
+
+                    if result.get("is_fixed"):
+                        st.success(f"✅ 修复成功（{result.get('iterations')} 次尝试）")
+                    else:
+                        st.warning("⚠️ 未完全修复")
+
+                    st.markdown("#### ✨ 修复后的代码")
+                    st.code(result.get("code"), language="python")
+
+                except Exception as e:
+                    st.error(f"❌ 出错: {str(e)}")
