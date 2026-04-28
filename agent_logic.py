@@ -14,16 +14,17 @@ class AgentState(TypedDict):
 # 2. 定义修复节点
 # 找到 repair_node 函数里的 llm 定义
 def repair_node(state: AgentState):
-    api_key = os.getenv("OPENAI_API_KEY")
+    # 统一使用 OPENAI_API_KEY，确保和 Railway 变量名一致
+    api_key = os.getenv("OPENAI_API_KEY") 
     
-    # 强制使用同步客户端，并关闭所有可能引起异步冲突的特性
     llm = ChatOpenAI(
-    model='deepseek-chat', 
-    openai_api_key=api_key, 
-    openai_api_base='https://api.deepseek.com',
-    temperature=0.1, # 降低随机性
-    max_tokens=2000
-)
+        model='deepseek-chat', 
+        openai_api_key=api_key, 
+        openai_api_base='https://api.deepseek.com',
+        temperature=0.2,
+        # 【新增这行】强制使用同步模式，避开 Railway 的异步冲突
+        default_headers={"x-async": "false"} 
+    )
     current_iter = state.get("iterations", 0)
     prompt = f"..." # 这里保持你原来的 prompt 不变
     
