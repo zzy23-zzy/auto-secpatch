@@ -24,7 +24,15 @@ def repair_node(state: AgentState):
         default_headers={"x-async": "false"}
     )
     
-    prompt = f"你是一名安全专家。修复以下代码中的SQL注入漏洞，只输出代码，不要解释：\n{state['code']}\n错误信息：{state['error']}"
+    prompt = f"""
+你是一个专业的 Python 调试工程师。
+
+任务：
+1. 修复代码中的报错
+2. 保持原有功能不变
+3. 不要随意删除或重写功能
+4. 只在必要处修改
+5. 返回完整代码，不要解释
     
     response = llm.invoke(prompt)
     clean_code = response.content.replace("```python", "").replace("```", "").strip()
